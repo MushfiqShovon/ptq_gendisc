@@ -88,6 +88,24 @@ class Gen(nn.Module):
         #print("out.shape:", out.shape)
         return out
 
+class MLPFeatureExtractor(nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim):
+        super(MLPFeatureExtractor, self).__init__()
+        self.embedding = nn.Embedding(input_dim, hidden_dim)
+        self.fc1 = nn.Linear(hidden_dim, hidden_dim)
+        self.relu = nn.ReLU()
+        self.fc2 = nn.Linear(hidden_dim, output_dim)
+
+    def forward(self, x):
+        # x: [batch_size, sequence_length]
+        x = self.embedding(x)                   # [batch_size, sequence_length, hidden_dim]
+        x = torch.mean(x, dim=1)                # Mean pooling: [batch_size, hidden_dim]
+        x = self.fc1(x)                         # Fully connected: [batch_size, hidden_dim]
+        x = self.relu(x)                        # ReLU activation
+        logits = self.fc2(x)                    # Logits: [batch_size, output_dim]
+
+        return logits
+
 
 #Class for Brevitas Quantization model (QAT)
 
